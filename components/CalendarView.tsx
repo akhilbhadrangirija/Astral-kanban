@@ -7,6 +7,7 @@ import useMedia from "use-media"
 import { motion, AnimatePresence } from "framer-motion"
 import { getRandomColor, MAX_WIDTH_MOBILE, getMonthName } from "@/lib/utils"
 import events from "@/lib/events"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const shortDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -93,13 +94,50 @@ export function CalendarView() {
     ? getDayDetails(calendarData.weekDates[selectedDay])
     : { dayName: "Monday", shortDayName: "Mon", day: 1, month: "January", year: 2024 };
 
+  const handlePrevious = () => {
+
+  };
+
+  const handleNext = () => {
+
+  };
+
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">
-        {isMobile
-          ? `${currentDateDetails.dayName}, ${currentDateDetails.month} ${currentDateDetails.day}, ${currentDateDetails.year}`
-          : calendarData.monthYear}
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">
+          {isMobile
+            ? `${currentDateDetails.dayName}, ${currentDateDetails.month} ${currentDateDetails.day}, ${currentDateDetails.year}`
+            : calendarData.monthYear}
+        </h2>
+        {!isMobile &&
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePrevious}
+              disabled={selectedDay === 0}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-sm font-medium px-2">
+              {currentDateDetails.month} {currentDateDetails.day}–
+              {calendarData.weekDates.length > selectedDay + 6
+                ? getDayDetails(calendarData.weekDates[selectedDay + 6]).day
+                : getDayDetails(calendarData.weekDates[calendarData.weekDates.length - 1]).day},
+              {currentDateDetails.year}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleNext}
+              disabled={selectedDay >= calendarData.weekDates.length - 1}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        }
+      </div>
 
 
       {isMobile ? (
@@ -137,7 +175,7 @@ export function CalendarView() {
           </AnimatePresence>
         </div>
       ) : (
-        <div className="grid grid-cols-7 gap-4">
+        <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: 7 }).map((_, idx) => {
             // For each day of the week (0=Monday, 6=Sunday)
             // Find events that fall on this day of the week
@@ -165,7 +203,7 @@ export function CalendarView() {
               : { shortDayName: shortDays[idx], day: "-" };
 
             return (
-              <div key={idx} className="bg-muted/10 rounded-xl p-3 min-h-[600px]">
+              <div key={idx} className="bg-muted/10 rounded-xl p-2 min-h-[60]">
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   {dayDetails.shortDayName} {dayDetails.day}
                 </div>

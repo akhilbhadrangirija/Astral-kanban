@@ -17,14 +17,9 @@ export function Navbar() {
         <span className="text-xl font-bold">Astral Kanban</span>
       </div>
 
-      {/* Center Controls */}
+      {/* Right Controls */}
       <div className="flex items-center gap-2">
-        {!isMobile && <>
-          <Button variant="ghost" size="icon"><ChevronLeft className="w-4 h-4" /></Button>
-          <span className="text-sm font-medium px-2">April 8–14, 2025</span>
-          <Button variant="ghost" size="icon"><ChevronRight className="w-4 h-4" /></Button>
-        </>}
-        <Button variant="default" size="sm" className="ml-2 gap-1">
+        <Button variant="default" size="sm" className="gap-1">
           <Plus className="w-4 h-4" /> Add Task
         </Button>
       </div>

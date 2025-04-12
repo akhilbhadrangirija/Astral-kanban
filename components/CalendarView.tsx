@@ -1,72 +1,82 @@
-"use client"
+'use client'
 
-import { useMemo, useState } from "react"
-import { TaskCard, Task } from "./TaskCard"
-import { Button } from "@/components/ui/button"
-import useMedia from "use-media"
-import { motion, AnimatePresence } from "framer-motion"
-import { getRandomColor, MAX_WIDTH_MOBILE, getMonthName } from "@/lib/utils"
-import events from "@/lib/events"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { MAX_WIDTH_MOBILE, getMonthName, getRandomColor } from '@/lib/utils'
+import { Task, TaskCard } from './TaskCard'
+import { useMemo, useState } from 'react'
 
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-const shortDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+import { Button } from '@/components/ui/button'
+import events from '@/lib/events'
+import useMedia from 'use-media'
 
-
+const days = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday'
+]
+const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function CalendarView() {
   const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
   const [selectedDay, setSelectedDay] = useState(0)
-  const [direction, setDirection] = useState<"left" | "right">("left")
-
+  const [direction, setDirection] = useState<'left' | 'right'>('left')
+  const [selectedTask, setSelectedTask] = useState<string | null>(null)
   const calendarData = useMemo(() => {
     // Get all dates from events and sort them
-    const eventDates = Object.keys(events).sort();
+    const eventDates = Object.keys(events).sort()
 
     // If no events, provide a default week
     if (eventDates.length === 0) {
-      const today = new Date();
-      const defaultDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const today = new Date()
+      const defaultDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
       return {
         firstDate: defaultDate,
         lastDate: defaultDate,
         weekDates: [defaultDate],
         weeklyTasks: [[]] as Task[][],
         monthYear: `${getMonthName(today.getMonth())} ${today.getFullYear()}`
-      };
+      }
     }
 
     // Get the first and last date
-    const firstDate = eventDates[0];
-    const lastDate = eventDates[eventDates.length - 1];
+    const firstDate = eventDates[0]
+    const lastDate = eventDates[eventDates.length - 1]
 
     // Convert event dates to Task format
     const weeklyTasks = eventDates.map(date => {
-      return events[date].map(event => ({
-        time: event.time,
-        title: event.title,
-        description: event.description,
-        color: getRandomColor(event.id),
-        imageUrl: event.imageUrl
-      } as Task));
-    });
+      return events[date].map(
+        event =>
+          ({
+            time: event.time,
+            title: event.title,
+            description: event.description,
+            color: getRandomColor(event.id),
+            imageUrl: event.imageUrl
+          }) as Task
+      )
+    })
 
     // Get month and year for display
-    const firstDateObj = new Date(firstDate);
-    const lastDateObj = new Date(lastDate);
+    const firstDateObj = new Date(firstDate)
+    const lastDateObj = new Date(lastDate)
 
-    const firstMonth = getMonthName(firstDateObj.getMonth());
-    const lastMonth = getMonthName(lastDateObj.getMonth());
-    const firstYear = firstDateObj.getFullYear();
-    const lastYear = lastDateObj.getFullYear();
+    const firstMonth = getMonthName(firstDateObj.getMonth())
+    const lastMonth = getMonthName(lastDateObj.getMonth())
+    const firstYear = firstDateObj.getFullYear()
+    const lastYear = lastDateObj.getFullYear()
 
-    let monthYearDisplay;
+    let monthYearDisplay
     if (firstMonth === lastMonth && firstYear === lastYear) {
-      monthYearDisplay = `${firstMonth} ${firstYear}`;
+      monthYearDisplay = `${firstMonth} ${firstYear}`
     } else if (firstYear === lastYear) {
-      monthYearDisplay = `${firstMonth} - ${lastMonth} ${firstYear}`;
+      monthYearDisplay = `${firstMonth} - ${lastMonth} ${firstYear}`
     } else {
-      monthYearDisplay = `${firstMonth} ${firstYear} - ${lastMonth} ${lastYear}`;
+      monthYearDisplay = `${firstMonth} ${firstYear} - ${lastMonth} ${lastYear}`
     }
 
     return {
@@ -75,32 +85,34 @@ export function CalendarView() {
       weekDates: eventDates,
       weeklyTasks,
       monthYear: monthYearDisplay
-    };
-  }, []);
+    }
+  }, [])
 
   const getDayDetails = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1; // Convert to 0-6 where 0 is Monday
+    const date = new Date(dateStr)
+    const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1 // Convert to 0-6 where 0 is Monday
     return {
       dayName: days[dayOfWeek],
       shortDayName: shortDays[dayOfWeek],
       day: date.getDate(),
       month: getMonthName(date.getMonth()),
       year: date.getFullYear()
-    };
-  };
+    }
+  }
 
   const currentDateDetails = calendarData.weekDates[selectedDay]
     ? getDayDetails(calendarData.weekDates[selectedDay])
-    : { dayName: "Monday", shortDayName: "Mon", day: 1, month: "January", year: 2024 };
+    : {
+        dayName: 'Monday',
+        shortDayName: 'Mon',
+        day: 1,
+        month: 'January',
+        year: 2024
+      }
 
-  const handlePrevious = () => {
+  const handlePrevious = () => {}
 
-  };
-
-  const handleNext = () => {
-
-  };
+  const handleNext = () => {}
 
   return (
     <div className="p-6">
@@ -110,61 +122,70 @@ export function CalendarView() {
             ? `${currentDateDetails.dayName}, ${currentDateDetails.month} ${currentDateDetails.day}, ${currentDateDetails.year}`
             : calendarData.monthYear}
         </h2>
-        {!isMobile &&
+        {!isMobile && (
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={handlePrevious}
-              disabled={selectedDay === 0}
-            >
+              disabled={selectedDay === 0}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <span className="text-sm font-medium px-2">
               {currentDateDetails.month} {currentDateDetails.day}–
               {calendarData.weekDates.length > selectedDay + 6
                 ? getDayDetails(calendarData.weekDates[selectedDay + 6]).day
-                : getDayDetails(calendarData.weekDates[calendarData.weekDates.length - 1]).day},
-              {currentDateDetails.year}
+                : getDayDetails(
+                    calendarData.weekDates[calendarData.weekDates.length - 1]
+                  ).day}
+              ,{currentDateDetails.year}
             </span>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleNext}
-              disabled={selectedDay >= calendarData.weekDates.length - 1}
-            >
+              disabled={selectedDay >= calendarData.weekDates.length - 1}>
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
-        }
+        )}
       </div>
-
 
       {isMobile ? (
         <div>
-          <AnimatePresence mode="wait" initial={false}>
+          {/* <AnimatePresence
+            mode="wait"
+            initial={false}> */}
             <motion.div
               key={selectedDay}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={(e, info) => {
-                if (info.offset.x < -80 && selectedDay < calendarData.weekDates.length - 1) {
-                  setDirection("left")
-                  setSelectedDay((prev) => prev + 1)
+                if (
+                  info.offset.x < -80 &&
+                  selectedDay < calendarData.weekDates.length - 1
+                ) {
+                  setDirection('left')
+                  setSelectedDay(prev => prev + 1)
                 } else if (info.offset.x > 80 && selectedDay > 0) {
-                  setDirection("right")
-                  setSelectedDay((prev) => prev - 1)
+                  setDirection('right')
+                  setSelectedDay(prev => prev - 1)
                 }
               }}
-              initial={{ x: direction === "left" ? 100 : -100, opacity: 0 }}
+              initial={{ x: direction === 'left' ? 100 : -100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: direction === "left" ? -100 : 100, opacity: 0 }}
+              exit={{ x: direction === 'left' ? -100 : 100, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="space-y-3 cursor-grab active:cursor-grabbing"
-            >
+              className="space-y-3 cursor-grab active:cursor-grabbing">
               {calendarData.weeklyTasks[selectedDay]?.length > 0 ? (
                 calendarData.weeklyTasks[selectedDay].map((task, idx) => (
-                  <TaskCard key={idx} {...task} />
+                  <TaskCard
+                    key={idx + task.title}
+                    {...task}
+                    isSelected={selectedTask === task.title}
+                    onSelect={() => setSelectedTask(task.title)}
+                    onClose={() => setSelectedTask(null)}
+                  />
                 ))
               ) : (
                 <div className="text-center p-4 text-muted-foreground">
@@ -172,7 +193,7 @@ export function CalendarView() {
                 </div>
               )}
             </motion.div>
-          </AnimatePresence>
+          {/* </AnimatePresence> */}
         </div>
       ) : (
         <div className="grid grid-cols-7 gap-1">
@@ -181,35 +202,42 @@ export function CalendarView() {
             // Find events that fall on this day of the week
             const eventsForThisDay = calendarData.weekDates
               .filter(dateStr => {
-                const date = new Date(dateStr);
-                const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1; // Convert to 0-6 where 0 is Monday
-                return dayOfWeek === idx;
+                const date = new Date(dateStr)
+                const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1 // Convert to 0-6 where 0 is Monday
+                return dayOfWeek === idx
               })
               .flatMap(dateStr => {
-                const dateIndex = calendarData.weekDates.indexOf(dateStr);
-                return calendarData.weeklyTasks[dateIndex] || [];
-              });
-
+                const dateIndex = calendarData.weekDates.indexOf(dateStr)
+                return calendarData.weeklyTasks[dateIndex] || []
+              })
 
             // Get a representative date for this column
             const representativeDate = calendarData.weekDates.find(dateStr => {
-              const date = new Date(dateStr);
-              const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1;
-              return dayOfWeek === idx;
-            });
+              const date = new Date(dateStr)
+              const dayOfWeek = date.getDay() === 0 ? 6 : date.getDay() - 1
+              return dayOfWeek === idx
+            })
 
             const dayDetails = representativeDate
               ? getDayDetails(representativeDate)
-              : { shortDayName: shortDays[idx], day: "-" };
+              : { shortDayName: shortDays[idx], day: '-' }
 
             return (
-              <div key={idx} className="bg-muted/10 rounded-xl p-2 min-h-[60]">
+              <div
+                key={idx}
+                className="bg-muted/10 rounded-xl p-2 min-h-[60]">
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   {dayDetails.shortDayName} {dayDetails.day}
                 </div>
                 {eventsForThisDay.length > 0 ? (
                   eventsForThisDay.map((task, taskIdx) => (
-                    <TaskCard key={taskIdx} {...task} />
+                    <TaskCard
+                      key={taskIdx + task.title}
+                      {...task}
+                      isSelected={selectedTask === task.title}
+                      onSelect={() => setSelectedTask(task.title)}
+                      onClose={() => setSelectedTask(null)}
+                    />
                   ))
                 ) : (
                   <div className="text-center p-4 text-muted-foreground text-sm">
@@ -217,7 +245,7 @@ export function CalendarView() {
                   </div>
                 )}
               </div>
-            );
+            )
           })}
         </div>
       )}
@@ -227,7 +255,6 @@ export function CalendarView() {
           ← Swipe to navigate days →
         </div>
       )}
-
     </div>
   )
 }

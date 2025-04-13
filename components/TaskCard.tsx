@@ -64,7 +64,7 @@ export function TaskCard({
         className={`mb-3 overflow-hidden rounded-lg shadow-md bg-white cursor-grab
                   transition-opacity duration-200
                   ${shouldDisableLayout ? 'opacity-50' : 'opacity-100'}
-                  ${isDraggingActive ? 'shadow-lg scale-105' : ''}
+                  ${isDraggingActive ? 'shadow-lg' : ''}
                   `}
         onClick={onSelect}>
         <motion.div

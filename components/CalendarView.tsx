@@ -1,29 +1,38 @@
 'use client'
 
-import {
-  DndContext,
-  DragOverlay,
-  useSensor,
-  useSensors,
-  MouseSensor,
-  TouchSensor,
-  DragEndEvent,
-  DragOverEvent,
-  DragStartEvent,
-} from '@dnd-kit/core'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core'
 import { MAX_WIDTH_MOBILE, getMonthName } from '@/lib/utils'
+import { useEffect, useMemo, useState } from 'react'
+
+import { Button } from '@/components/ui/button'
 import { DroppableDay } from './DroppableDay'
-import { TaskList } from './TaskList'
 import { Task } from '@/lib/types'
 import { TaskCard } from './TaskCard'
-import { useMemo, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { TaskList } from './TaskList'
 import events from '@/lib/events'
 import useMedia from 'use-media'
 
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const days = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday'
+]
 const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function CalendarView() {
@@ -33,13 +42,16 @@ export function CalendarView() {
   const [direction, setDirection] = useState<'left' | 'right'>('left')
   const [selectedTask, setSelectedTask] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [shouldScroll, setShouldScroll] = useState<'left' | 'right' | null>(
+    null
+  )
   const [tasks, setTasks] = useState(() => {
     const taskMap = new Map<string, Task>()
     Object.entries(events).forEach(([date, dayEvents]) => {
       dayEvents.forEach(event => {
         taskMap.set(event.id, {
           ...event,
-          date,
+          date
         })
       })
     })
@@ -51,13 +63,13 @@ export function CalendarView() {
       // Add activation constraints
       activationConstraint: {
         distance: 8, // Minimum distance before drag starts
-        delay: 100, // Small delay before drag starts
+        delay: 100 // Small delay before drag starts
       }
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
         delay: 100,
-        tolerance: 8,
+        tolerance: 8
       }
     })
   )
@@ -68,7 +80,7 @@ export function CalendarView() {
     const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1)
     startOfWeek.setDate(diff)
 
-    const weekDates = Array.from({length: 7}).map((_, i) => {
+    const weekDates = Array.from({ length: 7 }).map((_, i) => {
       const date = new Date(startOfWeek)
       date.setDate(startOfWeek.getDate() + i)
       return date.toISOString().split('T')[0]
@@ -155,14 +167,56 @@ export function CalendarView() {
   }
 
   const activeTask = activeId ? tasks.get(activeId.toString()) : null
+  useEffect(() => {
+      if (shouldScroll && activeId) {
+        const timer = setInterval(() => {
+          if (shouldScroll === 'left') {
+            handlePrevious()
+          } else {
+            handleNext()
+          }
+        }, 750)
+        return () => clearInterval(timer)
+      }
+    }, [shouldScroll, activeId])
 
+  useEffect(() => {
+      if (!activeId) return
+
+      const handleMouseMove = (e: MouseEvent) => {
+        const scrollThreshold = 100
+        if (e.clientX < scrollThreshold) {
+          setShouldScroll('left')
+        } else if (window.innerWidth - e.clientX < scrollThreshold) {
+          setShouldScroll('right')
+        } else {
+          setShouldScroll(null)
+        }
+      }
+
+      window.addEventListener('mousemove', handleMouseMove)
+      return () => window.removeEventListener('mousemove', handleMouseMove)
+    }, [activeId])
   return (
     <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}>
+      {activeId && (
+        <>
+          <div
+            className="fixed top-0 left-0 w-[100px] h-full bg-black/30 z-50"
+            onMouseEnter={() => setShouldScroll('left')}
+            onMouseLeave={() => setShouldScroll(null)}
+          />
+          <div
+            className="fixed top-0 right-0 w-[100px] h-full bg-black/30 z-50"
+            onMouseEnter={() => setShouldScroll('right')}
+            onMouseLeave={() => setShouldScroll(null)}
+          />
+        </>
+      )}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 pb-12">
         <h1 className="text-3xl font-bold text-white">Your Schedule</h1>
 
@@ -174,26 +228,28 @@ export function CalendarView() {
                   key={index}
                   onClick={() => handleDayChange(index)}
                   className={`relative flex flex-col items-center justify-center p-3 rounded-lg ${
-                    selectedDay === index ? "bg-indigo-700" : "bg-blue-400/50"
+                    selectedDay === index ? 'bg-indigo-700' : 'bg-blue-400/50'
                   }`}
                   whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                  whileTap={{ scale: 0.95 }}>
                   <span className="text-sm text-white">{shortDays[index]}</span>
                   <motion.span
                     className="text-xl font-bold text-white"
                     animate={{
                       scale: selectedDay === index ? 1.2 : 1,
-                      transition: { type: "spring", stiffness: 300 }
-                    }}
-                  >
+                      transition: { type: 'spring', stiffness: 300 }
+                    }}>
                     {new Date(calendarData.weekDates[index]).getDate()}
                   </motion.span>
                   {selectedDay === index && (
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full"
                       layoutId="underline"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30
+                      }}
                     />
                   )}
                 </motion.button>
@@ -211,20 +267,23 @@ export function CalendarView() {
             initial={{ x: direction === 'left' ? 100 : -100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: direction === 'left' ? -100 : 100, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h2 className="text-2xl font-bold">
-              {calendarData.monthYear}
-            </h2>
+            transition={{ duration: 0.3 }}>
+            <h2 className="text-2xl font-bold">{calendarData.monthYear}</h2>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={handlePrevious}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePrevious}>
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <span className="text-sm font-medium">
                 {new Date(calendarData.weekDates[0]).toLocaleDateString()} -
                 {new Date(calendarData.weekDates[6]).toLocaleDateString()}
               </span>
-              <Button variant="ghost" size="icon" onClick={handleNext}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleNext}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
@@ -254,27 +313,29 @@ export function CalendarView() {
         )}
       </div>
 
-      <DragOverlay dropAnimation={{
-              duration: 200,
-              easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+      <DragOverlay
+        dropAnimation={{
+          duration: 200,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
+        }}>
+        {activeId && activeTask ? (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '300px',
+              pointerEvents: 'none',
+              opacity: 1
             }}>
-              {activeId && activeTask ? (
-                <div style={{
-                  width: '100%',
-                  maxWidth: '300px',
-                  pointerEvents: 'none',
-                  opacity: 1,
-                }}>
-                  <TaskCard
-                    {...activeTask}
-                    isSelected={false}
-                    onSelect={() => {}}
-                    onClose={() => {}}
-                    isDragging={true}
-                  />
-                </div>
-              ) : null}
-            </DragOverlay>
+            <TaskCard
+              {...activeTask}
+              isSelected={false}
+              onSelect={() => {}}
+              onClose={() => {}}
+              isDragging={true}
+            />
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   )
 }

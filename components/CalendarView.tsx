@@ -1,7 +1,6 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   DndContext,
   DragEndEvent,
@@ -13,63 +12,47 @@ import {
   useSensor,
   useSensors
 } from '@dnd-kit/core'
-import { MAX_WIDTH_MOBILE, getMonthName } from '@/lib/utils'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 
-import { Button } from '@/components/ui/button'
+import { CalendarHeader } from './CalenderHeader'
 import { DroppableDay } from './DroppableDay'
-import { Task } from '@/lib/types'
+import { MAX_WIDTH_MOBILE } from '@/lib/utils'
 import { TaskCard } from './TaskCard'
 import { TaskList } from './TaskList'
-import events from '@/lib/events'
+import { useCalendar } from '@/contexts/CalendarContext'
 import useMedia from 'use-media'
 
-const days = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday'
-]
 const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function CalendarView() {
   const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
-  const [currentDate, setCurrentDate] = useState(new Date('2024-03-11'))
-  const [selectedDay, setSelectedDay] = useState(0)
-  const [direction, setDirection] = useState<'left' | 'right'>('left')
-  const [selectedTask, setSelectedTask] = useState<string | null>(null)
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [shouldScroll, setShouldScroll] = useState<'left' | 'right' | null>(
-    null
-  )
-  const [tasks, setTasks] = useState(() => {
-    const taskMap = new Map<string, Task>()
-    Object.entries(events).forEach(([date, dayEvents]) => {
-      dayEvents.forEach(event => {
-        taskMap.set(event.id, {
-          ...event,
-          date
-        })
-      })
-    })
-    return taskMap
-  })
+  const {
+    currentDate,
+    selectedDay,
+    direction,
+    selectedTask,
+    activeId,
+    shouldScroll,
+    tasks,
+    setActiveId,
+    setShouldScroll,
+    updateTasks,
+    handleWeekChange,
+    handleDayChange,
+    setSelectedTask
+  } = useCalendar()
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
-      // Add activation constraints
       activationConstraint: {
-        distance: 8, // Minimum distance before drag starts
-        delay: 100 // Small delay before drag starts
+        distance: 20,
+        delay: 1500
       }
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 100,
-        tolerance: 8
+        delay: 1500,
+        tolerance: 100
       }
     })
   )
@@ -87,15 +70,14 @@ export function CalendarView() {
     })
 
     const weeklyTasks = weekDates.map(date =>
-      Array.from(tasks.values())
-        .filter(task => task.date === date)
-        .sort((a, b) => a.time.localeCompare(b.time))
+      Array.from(tasks?.values() || [])
+        .filter(task => task?.date === date)
+        .sort((a, b) => (a?.time || '').localeCompare(b?.time || ''))
     )
 
     return {
       weekDates,
-      weeklyTasks,
-      monthYear: `${getMonthName(currentDate.getMonth())} ${currentDate.getFullYear()}`
+      weeklyTasks
     }
   }, [currentDate, tasks])
 
@@ -111,14 +93,7 @@ export function CalendarView() {
     const overDate = over.id.toString()
 
     if (activeTask && overDate !== activeTask.date) {
-      setTasks(prev => {
-        const newTasks = new Map(prev)
-        newTasks.set(active.id.toString(), {
-          ...activeTask,
-          date: overDate
-        })
-        return newTasks
-      })
+      updateTasks(active.id.toString(), overDate)
     }
   }
 
@@ -134,57 +109,37 @@ export function CalendarView() {
     const overDate = over.id.toString()
 
     if (activeTask && overDate !== activeTask.date) {
-      setTasks(prev => {
-        const newTasks = new Map(prev)
-        newTasks.set(active.id.toString(), {
-          ...activeTask,
-          date: overDate
-        })
-        return newTasks
-      })
+      updateTasks(active.id.toString(), overDate)
     }
 
     setActiveId(null)
   }
 
-  const handlePrevious = () => {
-    const newDate = new Date(currentDate)
-    newDate.setDate(currentDate.getDate() - 7)
-    setCurrentDate(newDate)
-    setDirection('right')
-  }
-
-  const handleNext = () => {
-    const newDate = new Date(currentDate)
-    newDate.setDate(currentDate.getDate() + 7)
-    setCurrentDate(newDate)
-    setDirection('left')
-  }
-
-  const handleDayChange = (newDay: number) => {
-    setDirection(newDay > selectedDay ? 'left' : 'right')
-    setSelectedDay(newDay)
-  }
-
-  const activeTask = activeId ? tasks.get(activeId.toString()) : null
   useEffect(() => {
-      if (shouldScroll && activeId) {
-        const timer = setInterval(() => {
-          if (shouldScroll === 'left') {
-            handlePrevious()
-          } else {
-            handleNext()
-          }
-        }, 750)
-        return () => clearInterval(timer)
-      }
-    }, [shouldScroll, activeId])
+    if (shouldScroll && activeId && !isMobile) {
+      const timer = setInterval(() => {
+        handleWeekChange(shouldScroll === 'left' ? 'previous' : 'next')
+      }, 750)
+      return () => clearInterval(timer)
+    }
+  }, [shouldScroll, activeId, isMobile])
 
   useEffect(() => {
-      if (!activeId) return
+    if (!activeId) return
 
-      const handleMouseMove = (e: MouseEvent) => {
-        const scrollThreshold = 100
+    const handleMouseMove = (e: MouseEvent) => {
+      const scrollThreshold = 100
+
+      if (isMobile) {
+        if (e.clientX < scrollThreshold && selectedDay > 0) {
+          handleDayChange(selectedDay - 1)
+        } else if (
+          window.innerWidth - e.clientX < scrollThreshold &&
+          selectedDay < 6
+        ) {
+          handleDayChange(selectedDay + 1)
+        }
+      } else {
         if (e.clientX < scrollThreshold) {
           setShouldScroll('left')
         } else if (window.innerWidth - e.clientX < scrollThreshold) {
@@ -193,10 +148,21 @@ export function CalendarView() {
           setShouldScroll(null)
         }
       }
+    }
 
-      window.addEventListener('mousemove', handleMouseMove)
-      return () => window.removeEventListener('mousemove', handleMouseMove)
-    }, [activeId])
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [activeId, isMobile, selectedDay])
+
+  const transitionConfig = {
+    initial: { opacity: 0, x: direction === 'left' ? '100%' : '-100%' },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: direction === 'left' ? '-100%' : '100%' },
+    transition: { duration: 0.3, ease: 'easeInOut' }
+  }
+
+  const activeTask = activeId ? tasks.get(activeId) : null
+
   return (
     <DndContext
       sensors={sensors}
@@ -207,23 +173,24 @@ export function CalendarView() {
         <>
           <div
             className="fixed top-0 left-0 w-[100px] h-full bg-black/30 z-50"
-            onMouseEnter={() => setShouldScroll('left')}
-            onMouseLeave={() => setShouldScroll(null)}
+            onMouseEnter={() => !isMobile && setShouldScroll('left')}
+            onMouseLeave={() => !isMobile && setShouldScroll(null)}
           />
           <div
             className="fixed top-0 right-0 w-[100px] h-full bg-black/30 z-50"
-            onMouseEnter={() => setShouldScroll('right')}
-            onMouseLeave={() => setShouldScroll(null)}
+            onMouseEnter={() => !isMobile && setShouldScroll('right')}
+            onMouseLeave={() => !isMobile && setShouldScroll(null)}
           />
         </>
       )}
+
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 pb-12">
         <h1 className="text-3xl font-bold text-white">Your Schedule</h1>
 
         {isMobile && (
           <motion.div className="mt-6">
             <div className="flex justify-between gap-2">
-              {days.map((day, index) => (
+              {shortDays.map((day, index) => (
                 <motion.button
                   key={index}
                   onClick={() => handleDayChange(index)}
@@ -232,7 +199,7 @@ export function CalendarView() {
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}>
-                  <span className="text-sm text-white">{shortDays[index]}</span>
+                  <span className="text-sm text-white">{day}</span>
                   <motion.span
                     className="text-xl font-bold text-white"
                     animate={{
@@ -259,58 +226,40 @@ export function CalendarView() {
         )}
       </div>
 
-      <div className="p-6">
-        <AnimatePresence mode="wait">
+      <div className="p-6 relative overflow-hidden">
+        {!isMobile && <CalendarHeader weekDates={calendarData.weekDates} />}
+
+        <AnimatePresence
+          mode="wait"
+          initial={false}>
           <motion.div
-            key={selectedDay}
-            className="flex justify-between items-center mb-4"
-            initial={{ x: direction === 'left' ? 100 : -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction === 'left' ? -100 : 100, opacity: 0 }}
-            transition={{ duration: 0.3 }}>
-            <h2 className="text-2xl font-bold">{calendarData.monthYear}</h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handlePrevious}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <span className="text-sm font-medium">
-                {new Date(calendarData.weekDates[0]).toLocaleDateString()} -
-                {new Date(calendarData.weekDates[6]).toLocaleDateString()}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleNext}>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
+            key={currentDate.toISOString()}
+            {...transitionConfig}>
+            {isMobile ? (
+              <div>
+                <TaskList
+                  tasks={calendarData.weeklyTasks[selectedDay] || []}
+                  selectedTask={selectedTask}
+                  onSelectTask={setSelectedTask}
+                  date={calendarData.weekDates[selectedDay]}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-7 gap-4">
+                {calendarData.weekDates.map((date, idx) => (
+                  <DroppableDay
+                    key={date}
+                    date={date}
+                    dayName={shortDays[idx]}
+                    tasks={calendarData.weeklyTasks[idx] || []}
+                    selectedTask={selectedTask}
+                    onSelectTask={setSelectedTask}
+                  />
+                ))}
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
-
-        {isMobile ? (
-          <TaskList
-            tasks={calendarData.weeklyTasks[selectedDay]}
-            selectedTask={selectedTask}
-            onSelectTask={setSelectedTask}
-            date={calendarData.weekDates[selectedDay]}
-          />
-        ) : (
-          <div className="grid grid-cols-7 gap-4">
-            {calendarData.weekDates.map((date, idx) => (
-              <DroppableDay
-                key={date}
-                date={date}
-                dayName={shortDays[idx]}
-                tasks={calendarData.weeklyTasks[idx]}
-                selectedTask={selectedTask}
-                onSelectTask={setSelectedTask}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       <DragOverlay

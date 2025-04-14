@@ -129,6 +129,7 @@ export function TaskCard({
                   </Badge>
                 </motion.div>
                 <button
+                  suppressHydrationWarning
                   onClick={onClose}
                   className="text-gray-500 hover:text-gray-700">
                   ✕

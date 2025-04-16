@@ -137,7 +137,7 @@ export function CalendarView() {
       const currentTime = Date.now()
       const timeSinceLastChange = currentTime - lastDayChangeTime.current
 
-      if (timeSinceLastChange >= 500) {
+      if (timeSinceLastChange >= 300) {
         if (touch.clientX < scrollThreshold && selectedDay > 0) {
           handleDayChange(selectedDay - 1)
           lastDayChangeTime.current = currentTime
@@ -153,7 +153,7 @@ export function CalendarView() {
 
     window.addEventListener('touchmove', handleTouchMove)
     return () => window.removeEventListener('touchmove', handleTouchMove)
-  }, [isMobile, activeId, selectedDay, handleDayChange])
+  }, [isMobile, activeId])
 
   useEffect(() => {
     if (!activeId) return
@@ -163,7 +163,7 @@ export function CalendarView() {
       const currentTime = Date.now()
       const timeSinceLastChange = currentTime - lastDayChangeTime.current
 
-      if (isMobile && timeSinceLastChange >= 500) {
+      if (isMobile && timeSinceLastChange >= 300) {
         if (e.clientX < scrollThreshold && selectedDay > 0) {
           handleDayChange(selectedDay - 1)
           lastDayChangeTime.current = currentTime
@@ -208,14 +208,10 @@ export function CalendarView() {
           <div
             ref={leftRef}
             className="fixed top-0 left-0 w-[100px] h-full bg-black/30 z-50"
-            // onMouseEnter={() => setShouldScroll('left')}
-            // onMouseLeave={() => setShouldScroll(null)}
           />
           <div
             ref={rightRef}
             className="fixed top-0 right-0 w-[100px] h-full bg-black/30 z-50"
-            // onMouseEnter={() => setShouldScroll('right')}
-            // onMouseLeave={() => setShouldScroll(null)}
           />
         </>
       )}
@@ -313,11 +309,12 @@ export function CalendarView() {
             mode="wait"
             initial={false}>
             <motion.div
-              drag={!activeId ? 'x' : undefined}
+              drag={activeId ? false : 'x'}
               className="min-h-[70vh]"
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={(e, info) => {
                 e.stopPropagation()
+                if (activeId) return
                 if (
                   info.offset.x < -80 &&
                   selectedDay < calendarData.weekDates.length - 1

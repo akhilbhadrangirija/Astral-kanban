@@ -1,6 +1,5 @@
 import { Task, TaskCard } from './TaskCard'
 
-import { motion } from 'framer-motion'
 import { useDroppable } from '@dnd-kit/core'
 
 interface DroppableDayProps {
@@ -18,7 +17,7 @@ export function DroppableDay({
   selectedTask,
   onSelectTask
 }: DroppableDayProps) {
-  const { setNodeRef, isOver, active } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: date
   })
 

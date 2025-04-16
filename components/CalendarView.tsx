@@ -194,44 +194,63 @@ export function CalendarView() {
 
         {/* Mobile header */}
         {isMobile && (
-          <motion.div className="mt-6">
-            <div className="flex justify-between gap-2">
-              {calendarData.weekDates.map((date, idx) => {
-                const dayDate = new Date(date)
-                return (
-                  <motion.button
-                    key={idx}
-                    onClick={() => handleDayChange(idx)}
-                    className={`relative flex flex-col items-center justify-center p-3 rounded-lg ${
-                      selectedDay === idx ? 'bg-indigo-700' : 'bg-blue-400/50'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}>
-                    <span className="text-sm text-white">{shortDays[idx]}</span>
-                    <motion.span
-                      className="text-xl font-bold text-white"
-                      animate={{
-                        scale: selectedDay === idx ? 1.05 : 1,
-                        transition: { type: 'spring', stiffness: 800 }
-                      }}>
-                      {dayDate.getDate()}
-                    </motion.span>
-                    {selectedDay === idx && (
-                      <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full"
-                        layoutId="underline"
-                        transition={{
-                          type: 'spring',
-                          stiffness: 300,
-                          damping: 30
-                        }}
-                      />
-                    )}
-                  </motion.button>
-                )
-              })}
-            </div>
-          </motion.div>
+          <AnimatePresence
+            mode="wait"
+            initial={false}>
+            <motion.div
+              drag="x"
+              className="mt-6"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(e, info) => {
+                e.stopPropagation()
+                if (info.offset.x < -80) {
+                  handleWeekChange('next')
+                } else if (info.offset.x > 80) {
+                  handleWeekChange('previous')
+                }
+              }}
+              key={currentDate.toString()}
+              {...transitionConfig}>
+              <div className="flex justify-between gap-2">
+                {calendarData.weekDates.map((date, idx) => {
+                  const dayDate = new Date(date)
+                  return (
+                    <motion.button
+                      key={idx}
+                      onClick={() => handleDayChange(idx)}
+                      className={`relative flex flex-col items-center justify-center p-3 rounded-lg ${
+                        selectedDay === idx ? 'bg-indigo-700' : 'bg-blue-400/50'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}>
+                      <span className="text-sm text-white">
+                        {shortDays[idx]}
+                      </span>
+                      <motion.span
+                        className="text-xl font-bold text-white"
+                        animate={{
+                          scale: selectedDay === idx ? 1.05 : 1,
+                          transition: { type: 'spring', stiffness: 800 }
+                        }}>
+                        {dayDate.getDate()}
+                      </motion.span>
+                      {selectedDay === idx && (
+                        <motion.div
+                          className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full"
+                          layoutId="underline"
+                          transition={{
+                            type: 'spring',
+                            stiffness: 300,
+                            damping: 30
+                          }}
+                        />
+                      )}
+                    </motion.button>
+                  )
+                })}
+              </div>
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
 

@@ -1,4 +1,5 @@
-import { Task, TaskCard } from './TaskCard'
+import { Task } from '@/lib/types'
+import { TaskCard } from './TaskCard'
 import { motion } from 'framer-motion'
 import { useDroppable } from '@dnd-kit/core'
 
@@ -16,16 +17,15 @@ export function TaskList({
   onSelectTask
 }: TaskListProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id: date,
+    id: date
   })
 
   return (
     <motion.div
       ref={setNodeRef}
-      className={`space-y-3 ${isOver ? 'bg-muted/10 rounded-lg p-2' : ''}`}
-    >
+      className={`space-y-3 ${isOver ? 'bg-muted/10 rounded-lg p-2' : ''}`}>
       {tasks?.length > 0 ? (
-        tasks.map((task) => (
+        tasks.map(task => (
           <TaskCard
             key={task.id}
             {...task}

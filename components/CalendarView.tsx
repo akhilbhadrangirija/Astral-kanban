@@ -52,7 +52,7 @@ export function CalendarView() {
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 1500,
+        delay: 500,
         tolerance: 100
       }
     })

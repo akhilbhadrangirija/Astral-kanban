@@ -22,7 +22,7 @@ import { TaskList } from './TaskList'
 import { useCalendar } from '@/contexts/CalendarContext'
 import useMedia from 'use-media'
 
-const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export function CalendarView() {
   const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
@@ -192,40 +192,44 @@ export function CalendarView() {
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 pb-12">
         <h1 className="text-3xl font-bold text-white">Your Schedule</h1>
 
+        {/* Mobile header */}
         {isMobile && (
           <motion.div className="mt-6">
             <div className="flex justify-between gap-2">
-              {shortDays.map((day, index) => (
-                <motion.button
-                  key={index}
-                  onClick={() => handleDayChange(index)}
-                  className={`relative flex flex-col items-center justify-center p-3 rounded-lg ${
-                    selectedDay === index ? 'bg-indigo-700' : 'bg-blue-400/50'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}>
-                  <span className="text-sm text-white">{day}</span>
-                  <motion.span
-                    className="text-xl font-bold text-white"
-                    animate={{
-                      scale: selectedDay === index ? 1.05 : 1,
-                      transition: { type: 'spring', stiffness: 800 }
-                    }}>
-                    {new Date(calendarData.weekDates[index]).getDate()}
-                  </motion.span>
-                  {selectedDay === index && (
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full"
-                      layoutId="underline"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 300,
-                        damping: 30
-                      }}
-                    />
-                  )}
-                </motion.button>
-              ))}
+              {calendarData.weekDates.map((date, idx) => {
+                const dayDate = new Date(date)
+                return (
+                  <motion.button
+                    key={idx}
+                    onClick={() => handleDayChange(idx)}
+                    className={`relative flex flex-col items-center justify-center p-3 rounded-lg ${
+                      selectedDay === idx ? 'bg-indigo-700' : 'bg-blue-400/50'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}>
+                    <span className="text-sm text-white">{shortDays[idx]}</span>
+                    <motion.span
+                      className="text-xl font-bold text-white"
+                      animate={{
+                        scale: selectedDay === idx ? 1.05 : 1,
+                        transition: { type: 'spring', stiffness: 800 }
+                      }}>
+                      {dayDate.getDate()}
+                    </motion.span>
+                    {selectedDay === idx && (
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full"
+                        layoutId="underline"
+                        transition={{
+                          type: 'spring',
+                          stiffness: 300,
+                          damping: 30
+                        }}
+                      />
+                    )}
+                  </motion.button>
+                )
+              })}
             </div>
           </motion.div>
         )}

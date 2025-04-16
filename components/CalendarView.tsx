@@ -12,7 +12,7 @@ import {
   useSensor,
   useSensors
 } from '@dnd-kit/core'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { CalendarHeader } from './CalenderHeader'
 import { DroppableDay } from './DroppableDay'
@@ -26,6 +26,7 @@ const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function CalendarView() {
   const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
+  const lastDayChangeTime = useRef(Date.now())
   const {
     currentDate,
     selectedDay,
@@ -52,6 +53,7 @@ export function CalendarView() {
     useSensor(TouchSensor, {
       activationConstraint: {
         delay: 1500,
+        distance: 20,
         tolerance: 100
       }
     })
@@ -122,22 +124,26 @@ export function CalendarView() {
       }, 750)
       return () => clearInterval(timer)
     }
-  }, [shouldScroll, activeId, isMobile])
+  }, [shouldScroll, activeId, isMobile, handleWeekChange])
 
   useEffect(() => {
     if (!activeId) return
 
     const handleMouseMove = (e: MouseEvent) => {
       const scrollThreshold = 100
+      const currentTime = Date.now()
+      const timeSinceLastChange = currentTime - lastDayChangeTime.current
 
-      if (isMobile) {
+      if (isMobile && timeSinceLastChange >= 500) {
         if (e.clientX < scrollThreshold && selectedDay > 0) {
           handleDayChange(selectedDay - 1)
+          lastDayChangeTime.current = currentTime
         } else if (
           window.innerWidth - e.clientX < scrollThreshold &&
           selectedDay < 6
         ) {
           handleDayChange(selectedDay + 1)
+          lastDayChangeTime.current = currentTime
         }
       } else {
         if (e.clientX < scrollThreshold) {
@@ -152,7 +158,7 @@ export function CalendarView() {
 
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [activeId, isMobile, selectedDay])
+  }, [activeId, isMobile, selectedDay, handleDayChange, setShouldScroll])
 
   const transitionConfig = {
     initial: { opacity: 0, x: direction === 'left' ? '100%' : '-100%' },
@@ -169,7 +175,7 @@ export function CalendarView() {
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}>
-      {activeId && (
+      {activeId && isMobile && (
         <>
           <div
             className="fixed top-0 left-0 w-[100px] h-full bg-black/30 z-50"
@@ -203,8 +209,8 @@ export function CalendarView() {
                   <motion.span
                     className="text-xl font-bold text-white"
                     animate={{
-                      scale: selectedDay === index ? 1.2 : 1,
-                      transition: { type: 'spring', stiffness: 300 }
+                      scale: selectedDay === index ? 1.05 : 1,
+                      transition: { type: 'spring', stiffness: 800 }
                     }}>
                     {new Date(calendarData.weekDates[index]).getDate()}
                   </motion.span>

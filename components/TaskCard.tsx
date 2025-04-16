@@ -77,6 +77,7 @@ export function TaskCard({
               src={imageUrl || '/placeholder.svg'}
               alt={title}
               fill
+              sizes="auto"
               style={{ objectFit: 'cover' }}
             />
           </motion.div>
@@ -148,6 +149,7 @@ export function TaskCard({
                     src={imageUrl}
                     alt={title}
                     fill
+                    sizes="auto"
                     style={{ objectFit: 'cover' }}
                     className="rounded-md"
                   />

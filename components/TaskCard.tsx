@@ -1,26 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
 
 import { Badge } from '@/components/ui/badge'
-import { CSS } from '@dnd-kit/utilities'
 import Image from 'next/image'
+import { TaskCardProps } from '@/lib/types'
 import { useDraggable } from '@dnd-kit/core'
-
-export interface Task {
-  id: string
-  time: string
-  title: string
-  description: string
-  imageUrl?: string
-  color?: string
-  date: string
-}
-
-interface TaskCardProps extends Task {
-  isSelected: boolean
-  onSelect: () => void
-  onClose: () => void
-  isDragging?: boolean
-}
 
 export function TaskCard({
   id,

@@ -1,14 +1,6 @@
-import { Task, TaskCard } from './TaskCard'
-
+import { DroppableDayProps } from '@/lib/types'
+import { TaskCard } from './TaskCard'
 import { useDroppable } from '@dnd-kit/core'
-
-interface DroppableDayProps {
-  date: string
-  dayName: string
-  tasks: Task[]
-  selectedTask: string | null
-  onSelectTask: (taskId: string | null) => void
-}
 
 export function DroppableDay({
   date,

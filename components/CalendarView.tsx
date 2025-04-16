@@ -125,6 +125,36 @@ export function CalendarView() {
     }
   }, [shouldScroll, activeId, isMobile, handleWeekChange])
 
+  const leftRef = useRef<HTMLDivElement>(null)
+  const rightRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isMobile || !activeId) return
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      const scrollThreshold = 100
+      const currentTime = Date.now()
+      const timeSinceLastChange = currentTime - lastDayChangeTime.current
+
+      if (timeSinceLastChange >= 500) {
+        if (touch.clientX < scrollThreshold && selectedDay > 0) {
+          handleDayChange(selectedDay - 1)
+          lastDayChangeTime.current = currentTime
+        } else if (
+          window.innerWidth - touch.clientX < scrollThreshold &&
+          selectedDay < 6
+        ) {
+          handleDayChange(selectedDay + 1)
+          lastDayChangeTime.current = currentTime
+        }
+      }
+    }
+
+    window.addEventListener('touchmove', handleTouchMove)
+    return () => window.removeEventListener('touchmove', handleTouchMove)
+  }, [isMobile, activeId, selectedDay, handleDayChange])
+
   useEffect(() => {
     if (!activeId) return
 
@@ -167,7 +197,6 @@ export function CalendarView() {
   }
 
   const activeTask = activeId ? tasks.get(activeId) : null
-
   return (
     <DndContext
       sensors={sensors}
@@ -177,28 +206,28 @@ export function CalendarView() {
       {activeId && isMobile && (
         <>
           <div
+            ref={leftRef}
             className="fixed top-0 left-0 w-[100px] h-full bg-black/30 z-50"
-            onMouseEnter={() => !isMobile && setShouldScroll('left')}
-            onMouseLeave={() => !isMobile && setShouldScroll(null)}
+            // onMouseEnter={() => setShouldScroll('left')}
+            // onMouseLeave={() => setShouldScroll(null)}
           />
           <div
+            ref={rightRef}
             className="fixed top-0 right-0 w-[100px] h-full bg-black/30 z-50"
-            onMouseEnter={() => !isMobile && setShouldScroll('right')}
-            onMouseLeave={() => !isMobile && setShouldScroll(null)}
+            // onMouseEnter={() => setShouldScroll('right')}
+            // onMouseLeave={() => setShouldScroll(null)}
           />
         </>
       )}
-
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 md:p-6 p-3 md:pb-12 pb-6">
         <h1 className="text-3xl font-bold text-white">Your Schedule</h1>
 
-        {/* Mobile header */}
         {isMobile && (
           <AnimatePresence
             mode="wait"
-            initial={false}>
+            initial={true}>
             <motion.div
-              drag="x"
+              drag={'x'}
               className="mt-6"
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={(e, info) => {
@@ -209,7 +238,7 @@ export function CalendarView() {
                   handleWeekChange('previous')
                 }
               }}
-              key={currentDate.toString()}
+              key={currentDate.toISOString()}
               {...transitionConfig}>
               <div className="flex justify-between gap-2">
                 {calendarData.weekDates.map((date, idx) => {
@@ -253,7 +282,6 @@ export function CalendarView() {
           </AnimatePresence>
         )}
       </div>
-
       <div className="p-6 relative overflow-hidden">
         {!isMobile && (
           <>
@@ -285,7 +313,7 @@ export function CalendarView() {
             mode="wait"
             initial={false}>
             <motion.div
-              drag="x"
+              drag={!activeId ? 'x' : undefined}
               className="min-h-[70vh]"
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={(e, info) => {
@@ -311,7 +339,6 @@ export function CalendarView() {
           </AnimatePresence>
         )}
       </div>
-
       <DragOverlay
         dropAnimation={{
           duration: 200,

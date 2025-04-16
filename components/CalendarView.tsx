@@ -46,14 +46,13 @@ export function CalendarView() {
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: {
-        distance: 20,
+        distance: 50,
         delay: 1500
       }
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
         delay: 1500,
-        distance: 20,
         tolerance: 100
       }
     })
@@ -233,39 +232,61 @@ export function CalendarView() {
       </div>
 
       <div className="p-6 relative overflow-hidden">
-        {!isMobile && <CalendarHeader weekDates={calendarData.weekDates} />}
-
-        <AnimatePresence
-          mode="wait"
-          initial={false}>
-          <motion.div
-            key={currentDate.toISOString()}
-            {...transitionConfig}>
-            {isMobile ? (
-              <div>
-                <TaskList
-                  tasks={calendarData.weeklyTasks[selectedDay] || []}
-                  selectedTask={selectedTask}
-                  onSelectTask={setSelectedTask}
-                  date={calendarData.weekDates[selectedDay]}
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-7 gap-4">
-                {calendarData.weekDates.map((date, idx) => (
-                  <DroppableDay
-                    key={date}
-                    date={date}
-                    dayName={shortDays[idx]}
-                    tasks={calendarData.weeklyTasks[idx] || []}
-                    selectedTask={selectedTask}
-                    onSelectTask={setSelectedTask}
-                  />
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+        {!isMobile && (
+          <>
+            <CalendarHeader weekDates={calendarData.weekDates} />
+            <AnimatePresence
+              mode="wait"
+              initial={false}>
+              <motion.div
+                key={currentDate.toISOString()}
+                {...transitionConfig}>
+                <div className="grid grid-cols-7 gap-4">
+                  {calendarData.weekDates.map((date, idx) => (
+                    <DroppableDay
+                      key={date}
+                      date={date}
+                      dayName={shortDays[idx]}
+                      tasks={calendarData.weeklyTasks[idx] || []}
+                      selectedTask={selectedTask}
+                      onSelectTask={setSelectedTask}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </>
+        )}
+        {isMobile && (
+          <AnimatePresence
+            mode="wait"
+            initial={false}>
+            <motion.div
+              drag="x"
+              className="min-h-[70vh]"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(e, info) => {
+                e.stopPropagation()
+                if (
+                  info.offset.x < -80 &&
+                  selectedDay < calendarData.weekDates.length - 1
+                ) {
+                  handleDayChange(selectedDay + 1)
+                } else if (info.offset.x > 80 && selectedDay > 0) {
+                  handleDayChange(selectedDay - 1)
+                }
+              }}
+              key={selectedDay.toString()}
+              {...transitionConfig}>
+              <TaskList
+                tasks={calendarData.weeklyTasks[selectedDay] || []}
+                selectedTask={selectedTask}
+                onSelectTask={setSelectedTask}
+                date={calendarData.weekDates[selectedDay]}
+              />
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
 
       <DragOverlay

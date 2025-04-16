@@ -23,7 +23,9 @@ interface CalendarContextType {
   updateTasks: (taskId: string, newDate: string) => void
 }
 
-const CalendarContext = createContext<CalendarContextType | undefined>(undefined)
+const CalendarContext = createContext<CalendarContextType | undefined>(
+  undefined
+)
 
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [currentDate, setCurrentDate] = useState(new Date('2024-03-11'))
@@ -31,7 +33,9 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [direction, setDirection] = useState<'left' | 'right'>('left')
   const [selectedTask, setSelectedTask] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [shouldScroll, setShouldScroll] = useState<'left' | 'right' | null>(null)
+  const [shouldScroll, setShouldScroll] = useState<'left' | 'right' | null>(
+    null
+  )
   const [tasks, setTasks] = useState(() => {
     const taskMap = new Map<string, Task>()
     Object.entries(events).forEach(([date, dayEvents]) => {

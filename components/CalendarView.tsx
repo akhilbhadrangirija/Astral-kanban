@@ -189,7 +189,7 @@ export function CalendarView() {
         </>
       )}
 
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 pb-12">
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 md:p-6 p-3 md:pb-12 pb-6">
         <h1 className="text-3xl font-bold text-white">Your Schedule</h1>
 
         {/* Mobile header */}

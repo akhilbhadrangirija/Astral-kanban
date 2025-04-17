@@ -17,7 +17,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { CalendarHeader } from './CalenderHeader'
 import { DroppableDay } from './DroppableDay'
 import { MAX_WIDTH_MOBILE } from '@/lib/utils'
-import { TaskCard } from './TaskCard'
+import { TaskCardOverlay } from './TaskCardOverlay'
 import { TaskList } from './TaskList'
 import { useCalendar } from '@/contexts/CalendarContext'
 import useMedia from 'use-media'
@@ -278,7 +278,7 @@ export function CalendarView() {
           </AnimatePresence>
         )}
       </div>
-      <div className="p-6 relative overflow-hidden">
+      <div className="p-6 relative md:h-full h-[80vh] overflow-scroll">
         {!isMobile && (
           <>
             <CalendarHeader weekDates={calendarData.weekDates} />
@@ -338,18 +338,17 @@ export function CalendarView() {
       </div>
       <DragOverlay
         dropAnimation={{
-          duration: 200,
-          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
+          duration: 300,
+          easing: 'ease-in-out'
         }}>
         {activeId && activeTask ? (
           <div
             style={{
               width: '100%',
-              maxWidth: '300px',
               pointerEvents: 'none',
               opacity: 1
             }}>
-            <TaskCard
+            <TaskCardOverlay
               {...activeTask}
               isSelected={false}
               onSelect={() => {}}

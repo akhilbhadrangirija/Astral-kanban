@@ -16,7 +16,7 @@ export function DroppableDay({
   return (
     <div
       ref={setNodeRef}
-      className={`bg-muted/10 rounded-xl p-4 min-h-[200px]
+      className={`md:block hidden bg-muted/10 rounded-xl p-4 min-h-[200px]
             transition-all duration-200 ease-in-out
             ${isOver ? 'bg-muted/20 scale-[1.02] ring-2 ring-blue-400 ring-opacity-50' : ''}
           `}>

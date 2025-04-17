@@ -23,7 +23,7 @@ export function TaskList({
   return (
     <motion.div
       ref={setNodeRef}
-      className={`space-y-3 ${isOver ? 'bg-muted/10 rounded-lg p-2' : ''}`}>
+      className={`space-y-3 ${isOver ? 'bg-muted/10' : ''}`}>
       {tasks?.length > 0 ? (
         tasks.map(task => (
           <TaskCard

@@ -1,9 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { MAX_WIDTH_MOBILE, cn } from '@/lib/utils'
 
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { TaskCardProps } from '@/lib/types'
 import { useDraggable } from '@dnd-kit/core'
+import useMedia from 'use-media'
 
 export function TaskCard({
   id,
@@ -36,6 +38,7 @@ export function TaskCard({
   })
 
   const shouldDisableLayout = isDraggingActive || isDragging
+  const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
 
   return (
     <>
@@ -89,68 +92,137 @@ export function TaskCard({
           </motion.p>
         </motion.div>
       </motion.div>
-
-      <AnimatePresence>
-        {isSelected && (
-          <motion.div
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            onDragEnd={(e, info) => {
-              e.stopPropagation()
-              if (info.offset.y > 30) {
-                onClose()
-              }
-            }}
-            className="fixed inset-0 flex items-center justify-center z-50"
-            onClick={onClose}>
+      {isMobile ? (
+        <AnimatePresence
+          mode="wait"
+          initial={false}>
+          {isSelected && (
             <motion.div
-              layoutId={`task-card-${id}`}
-              className="bg-white p-4 sm:p-6 w-full max-w-lg my-auto h-full overflow-y-auto"
-              onClick={e => e.stopPropagation()}>
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              onDragEnd={(e, info) => {
+                e.stopPropagation()
+                if (info.offset.y > 30) {
+                  onClose()
+                }
+              }}
+              className="fixed inset-0 flex items-center justify-center z-50 h-full w-full"
+              onClick={onClose}>
               <motion.div
-                layoutId={`badge-container-${id}`}
-                className="flex justify-between items-start mb-4">
-                <motion.div layoutId={`badge-${id}`}>
-                  <Badge
-                    className={`${colorMap[color]} text-white px-2 py-1 rounded-md text-xs`}>
-                    {time}
-                  </Badge>
-                </motion.div>
-                <button
-                  suppressHydrationWarning
-                  onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700">
-                  ✕
-                </button>
-              </motion.div>
-              <motion.h2
-                layoutId={`title-${id}`}
-                className="text-lg sm:text-xl font-bold mb-4">
-                {title}
-              </motion.h2>
-              {imageUrl && (
+                layoutId={`task-card-${id}`}
+                className="bg-white p-4 sm:p-6 w-full max-w-lg my-auto overflow-y-auto rounded-lg md:h-fit h-full"
+                onClick={e => e.stopPropagation()}>
                 <motion.div
-                  layoutId={`image-${id}`}
-                  className="w-full h-40 sm:h-48 relative rounded-md overflow-hidden mb-4">
-                  <Image
-                    src={imageUrl}
-                    alt={title}
-                    fill
-                    sizes="auto"
-                    style={{ objectFit: 'cover' }}
-                    className="rounded-md"
-                  />
+                  layoutId={`badge-container-${id}`}
+                  className="flex justify-between items-start mb-4">
+                  <motion.div layoutId={`badge-${id}`}>
+                    <Badge
+                      className={`${colorMap[color]} text-white px-2 py-1 rounded-md text-xs`}>
+                      {time}
+                    </Badge>
+                  </motion.div>
+                  <button
+                    suppressHydrationWarning
+                    onClick={onClose}
+                    className="text-gray-500 hover:text-gray-700">
+                    ✕
+                  </button>
                 </motion.div>
-              )}
-              <motion.p
-                layoutId={`description-${id}`}
-                className="text-sm sm:text-base text-gray-600">
-                {description}
-              </motion.p>
+                <motion.h2
+                  layoutId={`title-${id}`}
+                  className="text-lg sm:text-xl font-bold mb-4">
+                  {title}
+                </motion.h2>
+                {imageUrl && (
+                  <motion.div
+                    layoutId={`image-${id}`}
+                    className="w-full h-40 sm:h-48 relative rounded-md overflow-hidden mb-4">
+                    <Image
+                      src={imageUrl}
+                      alt={title}
+                      fill
+                      sizes="auto"
+                      style={{ objectFit: 'cover' }}
+                      className="rounded-md"
+                    />
+                  </motion.div>
+                )}
+                <motion.p
+                  layoutId={`description-${id}`}
+                  className="text-sm sm:text-base text-gray-600">
+                  {description}
+                </motion.p>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      ) : (
+        <AnimatePresence
+          mode="wait"
+          initial={false}>
+          {isSelected && (
+            <motion.div
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              onDragEnd={(e, info) => {
+                e.stopPropagation()
+                if (info.offset.y > 30) {
+                  onClose()
+                }
+              }}
+              className={cn(
+                'fixed inset-0 bg-black/30 flex items-center justify-center z-50 h-full w-full'
+              )}
+              onClick={onClose}>
+              <motion.div
+                layoutId={`task-card-${id}`}
+                className="bg-white p-4 sm:p-6 w-full max-w-lg my-auto overflow-y-auto rounded-lg md:h-fit"
+                onClick={e => e.stopPropagation()}>
+                <motion.div
+                  layoutId={`badge-container-${id}`}
+                  className="flex justify-between items-start mb-4">
+                  <motion.div layoutId={`badge-${id}`}>
+                    <Badge
+                      className={`${colorMap[color]} text-white px-2 py-1 rounded-md text-xs`}>
+                      {time}
+                    </Badge>
+                  </motion.div>
+                  <button
+                    suppressHydrationWarning
+                    onClick={onClose}
+                    className="text-gray-500 hover:text-gray-700">
+                    ✕
+                  </button>
+                </motion.div>
+                <motion.h2
+                  layoutId={`title-${id}`}
+                  className="text-lg sm:text-xl font-bold mb-4">
+                  {title}
+                </motion.h2>
+                {imageUrl && (
+                  <motion.div
+                    layoutId={`image-${id}`}
+                    className="w-full h-40 sm:h-48 relative rounded-md overflow-hidden mb-4">
+                    <Image
+                      src={imageUrl}
+                      alt={title}
+                      fill
+                      sizes="auto"
+                      style={{ objectFit: 'cover' }}
+                      className="rounded-md"
+                    />
+                  </motion.div>
+                )}
+                <motion.p
+                  layoutId={`description-${id}`}
+                  className="text-sm sm:text-base text-gray-600">
+                  {description}
+                </motion.p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </>
   )
 }

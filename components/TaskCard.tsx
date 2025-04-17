@@ -93,14 +93,19 @@ export function TaskCard({
       <AnimatePresence>
         {isSelected && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            onDragEnd={(e, info) => {
+              e.stopPropagation()
+              if (info.offset.y > 30) {
+                onClose()
+              }
+            }}
+            className="fixed inset-0 flex items-center justify-center z-50"
             onClick={onClose}>
             <motion.div
               layoutId={`task-card-${id}`}
-              className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-lg mx-4 my-auto max-h-[90vh] overflow-y-auto"
+              className="bg-white p-4 sm:p-6 w-full max-w-lg my-auto h-full overflow-y-auto"
               onClick={e => e.stopPropagation()}>
               <motion.div
                 layoutId={`badge-container-${id}`}

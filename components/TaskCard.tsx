@@ -43,18 +43,18 @@ export function TaskCard({
         ref={setNodeRef}
         {...attributes}
         {...listeners}
-        layoutId={shouldDisableLayout ? undefined : `task-card-${id}`}
+        layoutId={`task-card-${id}`}
         className={`mb-3 overflow-hidden rounded-lg shadow-md bg-white cursor-grab
-                  transition-opacity duration-200
-                  ${shouldDisableLayout ? 'opacity-50' : 'opacity-100'}
+                  transition-opacity duration-1000
+                  ${shouldDisableLayout ? 'opacity-0' : 'opacity-100'}
                   ${isDraggingActive ? 'shadow-lg' : ''}
                   `}
         onClick={onSelect}>
         <motion.div
-          layoutId={shouldDisableLayout ? undefined : `image-container-${id}`}
+          layoutId={`image-container-${id}`}
           className="relative">
           <motion.div
-            layoutId={shouldDisableLayout ? undefined : `image-${id}`}
+            layoutId={`image-${id}`}
             className="w-full h-48 relative">
             <Image
               src={imageUrl || '/placeholder.svg'}
@@ -65,10 +65,9 @@ export function TaskCard({
             />
           </motion.div>
           <motion.div
-            layoutId={shouldDisableLayout ? undefined : `badge-container-${id}`}
+            layoutId={`badge-container-${id}`}
             className="absolute top-4 right-4">
-            <motion.div
-              layoutId={shouldDisableLayout ? undefined : `badge-${id}`}>
+            <motion.div layoutId={`badge-${id}`}>
               <Badge
                 className={`${colorMap[color]} text-white px-3 py-1 rounded-full text-sm font-medium`}>
                 {time}
@@ -79,12 +78,12 @@ export function TaskCard({
 
         <motion.div className="p-4">
           <motion.h3
-            layoutId={shouldDisableLayout ? undefined : `title-${id}`}
+            layoutId={`title-${id}`}
             className="font-bold text-gray-800">
             {title}
           </motion.h3>
           <motion.p
-            layoutId={shouldDisableLayout ? undefined : `description-${id}`}
+            layoutId={`description-${id}`}
             className="text-gray-500 line-clamp-1">
             {description}
           </motion.p>

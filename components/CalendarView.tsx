@@ -12,11 +12,11 @@ import {
   useSensor,
   useSensors
 } from '@dnd-kit/core'
+import { MAX_WIDTH_MOBILE, getMonthName } from '@/lib/utils'
 import { useEffect, useMemo, useRef } from 'react'
 
 import { CalendarHeader } from './CalenderHeader'
 import { DroppableDay } from './DroppableDay'
-import { MAX_WIDTH_MOBILE } from '@/lib/utils'
 import { TaskCardOverlay } from './TaskCardOverlay'
 import { TaskList } from './TaskList'
 import { useCalendar } from '@/contexts/CalendarContext'
@@ -304,36 +304,54 @@ export function CalendarView() {
             </AnimatePresence>
           </>
         )}
+
         {isMobile && (
-          <AnimatePresence
-            mode="wait"
-            initial={true}>
-            <motion.div
-              drag={activeId ? false : 'x'}
-              className="min-h-[70vh]"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={(e, info) => {
-                e.stopPropagation()
-                if (activeId) return
-                if (
-                  info.offset.x < -80 &&
-                  selectedDay < calendarData.weekDates.length - 1
-                ) {
-                  handleDayChange(selectedDay + 1)
-                } else if (info.offset.x > 80 && selectedDay > 0) {
-                  handleDayChange(selectedDay - 1)
-                }
-              }}
-              key={selectedDay.toString() + currentDate.toISOString()}
-              {...transitionConfig}>
-              <TaskList
-                tasks={calendarData.weeklyTasks[selectedDay] || []}
-                selectedTask={selectedTask}
-                onSelectTask={setSelectedTask}
-                date={calendarData.weekDates[selectedDay]}
-              />
-            </motion.div>
-          </AnimatePresence>
+          <>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={getMonthName(currentDate.getMonth())}
+                {...{
+                  ...transitionConfig,
+                  transition: { duration: 0.4, ease: 'easeInOut' }
+                }}
+                className="flex items-center justify-between gap-5 border border-white mb-4">
+                <h2 className="text-2xl font-bold">
+                  {getMonthName(currentDate.getMonth())}{' '}
+                  {currentDate.getFullYear()}
+                </h2>
+                <div className="h-[2px] w-1/3 bg-gradient-to-r from-indigo-500 to-teal-500"></div>
+              </motion.div>
+            </AnimatePresence>
+            <AnimatePresence
+              mode="wait"
+              initial={true}>
+              <motion.div
+                drag={activeId ? false : 'x'}
+                className="min-h-[70vh]"
+                dragConstraints={{ left: 0, right: 0 }}
+                onDragEnd={(e, info) => {
+                  e.stopPropagation()
+                  if (activeId) return
+                  if (
+                    info.offset.x < -80 &&
+                    selectedDay < calendarData.weekDates.length - 1
+                  ) {
+                    handleDayChange(selectedDay + 1)
+                  } else if (info.offset.x > 80 && selectedDay > 0) {
+                    handleDayChange(selectedDay - 1)
+                  }
+                }}
+                key={selectedDay.toString() + currentDate.toISOString()}
+                {...transitionConfig}>
+                <TaskList
+                  tasks={calendarData.weeklyTasks[selectedDay] || []}
+                  selectedTask={selectedTask}
+                  onSelectTask={setSelectedTask}
+                  date={calendarData.weekDates[selectedDay]}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </>
         )}
       </div>
       <DragOverlay

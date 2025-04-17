@@ -307,7 +307,7 @@ export function CalendarView() {
         {isMobile && (
           <AnimatePresence
             mode="wait"
-            initial={false}>
+            initial={true}>
             <motion.div
               drag={activeId ? false : 'x'}
               className="min-h-[70vh]"

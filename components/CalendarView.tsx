@@ -324,7 +324,7 @@ export function CalendarView() {
                   handleDayChange(selectedDay - 1)
                 }
               }}
-              key={selectedDay.toString()}
+              key={selectedDay.toString() + currentDate.toISOString()}
               {...transitionConfig}>
               <TaskList
                 tasks={calendarData.weeklyTasks[selectedDay] || []}

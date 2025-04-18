@@ -33,7 +33,7 @@ export function TaskList({
   return (
     <motion.div
       ref={setNodeRef}
-      className={`space-y-3 ${isOver ? 'bg-muted/10' : ''}`}>
+      className={`space-y-3 ${isOver ? 'bg-muted/10 opacity-70' : ''}`}>
       <SortableContext
         items={taskIds}
         strategy={verticalListSortingStrategy}>

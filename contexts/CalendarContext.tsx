@@ -1,6 +1,12 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState
+} from 'react'
 
 import { Task } from '@/lib/types'
 import events from '@/lib/events'
@@ -13,14 +19,23 @@ interface CalendarContextType {
   activeId: string | null
   shouldScroll: 'left' | 'right' | null
   tasks: Map<string, Task>
+  activeTask: Task | null | undefined
 
-  // Actions
-  handleDayChange: (newDay: number) => void
-  handleWeekChange: (direction: 'previous' | 'next') => void
-  setSelectedTask: (taskId: string | null) => void
   setActiveId: (id: string | null) => void
   setShouldScroll: (direction: 'left' | 'right' | null) => void
   updateTasks: (taskId: string, newDate: string) => void
+  handleWeekChange: (direction: 'previous' | 'next') => void
+  handleDayChange: (day: number) => void
+  setSelectedTask: (taskId: string | null) => void
+  addTask: (task: Task) => void
+  deleteTask: (taskId: string) => void
+  updateTask: (taskId: string, updates: Partial<Task>) => void
+
+  // Computed values
+  calendarData: {
+    weekDates: string[]
+    weeklyTasks: Task[][]
+  }
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(
@@ -29,7 +44,7 @@ const CalendarContext = createContext<CalendarContextType | undefined>(
 
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
   const [currentDate, setCurrentDate] = useState(new Date('2024-03-11'))
-  const [selectedDay, setSelectedDay] = useState(0)
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay())
   const [direction, setDirection] = useState<'left' | 'right'>('left')
   const [selectedTask, setSelectedTask] = useState<string | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -46,19 +61,29 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     return taskMap
   })
 
-  const handleDayChange = (newDay: number) => {
-    setDirection(newDay > selectedDay ? 'left' : 'right')
-    setSelectedDay(newDay)
-  }
+  const handleWeekChange = useCallback((direction: 'previous' | 'next') => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev)
+      if (direction === 'previous') {
+        newDate.setDate(newDate.getDate() - 7)
+        setDirection('right')
+      } else {
+        newDate.setDate(newDate.getDate() + 7)
+        setDirection('left')
+      }
+      return newDate
+    })
+  }, [])
 
-  const handleWeekChange = (direction: 'previous' | 'next') => {
-    setDirection(direction === 'previous' ? 'right' : 'left')
-    const newDate = new Date(currentDate)
-    newDate.setDate(currentDate.getDate() + (direction === 'previous' ? -7 : 7))
-    setCurrentDate(newDate)
-  }
+  const handleDayChange = useCallback(
+    (day: number) => {
+      setSelectedDay(day)
+      setDirection(day < selectedDay ? 'right' : 'left')
+    },
+    [selectedDay]
+  )
 
-  const updateTasks = (taskId: string, newDate: string) => {
+  const updateTasks = useCallback((taskId: string, newDate: string) => {
     setTasks(prev => {
       const newTasks = new Map(prev)
       const task = newTasks.get(taskId)
@@ -67,7 +92,60 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
       }
       return newTasks
     })
-  }
+  }, [])
+
+  const addTask = useCallback((task: Task) => {
+    setTasks(prev => {
+      const newTasks = new Map(prev)
+      newTasks.set(task.id, task)
+      return newTasks
+    })
+  }, [])
+
+  const deleteTask = useCallback((taskId: string) => {
+    setTasks(prev => {
+      const newTasks = new Map(prev)
+      newTasks.delete(taskId)
+      return newTasks
+    })
+  }, [])
+
+  const updateTask = useCallback((taskId: string, updates: Partial<Task>) => {
+    setTasks(prev => {
+      const newTasks = new Map(prev)
+      const task = newTasks.get(taskId)
+      if (task) {
+        newTasks.set(taskId, { ...task, ...updates })
+      }
+      return newTasks
+    })
+  }, [])
+
+  const calendarData = useMemo(() => {
+    const startOfWeek = new Date(currentDate)
+    const day = startOfWeek.getDay()
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1)
+    startOfWeek.setDate(diff)
+
+    const weekDates = Array.from({ length: 7 }).map((_, i) => {
+      const date = new Date(startOfWeek)
+      date.setDate(startOfWeek.getDate() + i)
+      return date.toISOString().split('T')[0]
+    })
+
+    const weeklyTasks = weekDates.map(date =>
+      Array.from(tasks.values())
+        .filter(task => task.date === date)
+        .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
+    )
+
+    return {
+      weekDates,
+      weeklyTasks
+    }
+  }, [currentDate, tasks])
+
+  const activeTask = activeId ? tasks.get(activeId) : null
 
   const value = {
     currentDate,
@@ -77,12 +155,17 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
     activeId,
     shouldScroll,
     tasks,
-    handleDayChange,
-    handleWeekChange,
-    setSelectedTask,
+    activeTask,
+    calendarData,
     setActiveId,
     setShouldScroll,
-    updateTasks
+    updateTasks,
+    handleWeekChange,
+    handleDayChange,
+    setSelectedTask,
+    addTask,
+    deleteTask,
+    updateTask
   }
 
   return (

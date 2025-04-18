@@ -28,7 +28,7 @@ export function DroppableDay({
       ref={setNodeRef}
       className={`md:block hidden bg-muted/10 rounded-xl p-4 min-h-[200px]
             transition-all duration-200 ease-in-out
-            ${isOver ? 'bg-muted/20 scale-[1.02] ring-2 ring-blue-400 ring-opacity-50' : ''}
+            ${isOver ? 'bg-muted/20 scale-[1.02] ring-2 ring-blue-400 ring-opacity-50 opacity-70' : ''}
           `}>
       <div className="text-sm font-medium mb-2">
         {dayName} {new Date(date).getDate()}

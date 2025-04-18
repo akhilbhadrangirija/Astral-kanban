@@ -1,16 +1,13 @@
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { TaskCardProps } from '@/lib/types'
-import { useDraggable } from '@dnd-kit/core'
 
 export function TaskCardOverlay({
-  id,
   time,
   title,
   imageUrl,
   description,
   color = 'blue',
-  isSelected,
   onSelect
 }: TaskCardProps) {
   const colorMap: Record<string, string> = {
@@ -21,18 +18,10 @@ export function TaskCardOverlay({
     purple: 'bg-purple-500'
   }
 
-  const { attributes, listeners, setNodeRef } = useDraggable({
-    id,
-    disabled: isSelected // Prevent dragging when modal is open
-  })
-
   return (
     <>
       <div
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
-        className={`mb-3 overflow-hidden rounded-lg shadow-md bg-white cursor-grab transition-opacity duration-1000`}
+        className={`mb-3 overflow-hidden rounded-lg shadow-md bg-white cursor-grab transition-opacity`}
         onClick={onSelect}>
         <div className="relative">
           <div className="w-full h-48 relative">

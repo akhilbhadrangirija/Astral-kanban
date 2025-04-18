@@ -16,8 +16,7 @@ export function TaskCard({
   color = 'blue',
   isSelected,
   onSelect,
-  onClose,
-  isDragging = false
+  onClose
 }: TaskCardProps) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-500',
@@ -29,6 +28,7 @@ export function TaskCard({
 
   const {
     attributes,
+    active,
     listeners,
     setNodeRef,
     isDragging: isDraggingActive
@@ -37,7 +37,6 @@ export function TaskCard({
     disabled: isSelected // Prevent dragging when modal is open
   })
 
-  const shouldDisableLayout = isDraggingActive || isDragging
   const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
 
   return (
@@ -47,11 +46,8 @@ export function TaskCard({
         {...attributes}
         {...listeners}
         layoutId={`task-card-${id}`}
-        className={`mb-3 overflow-hidden rounded-lg shadow-md bg-white cursor-grab
-                  transition-opacity duration-1000
-                  ${shouldDisableLayout ? 'opacity-0' : 'opacity-100'}
-                  ${isDraggingActive ? 'shadow-lg' : ''}
-                  `}
+        className={`mb-3 overflow-hidden rounded-lg shadow-md bg-white cursor-grab transition-opacity duration-1000
+          ${active || isDraggingActive ? 'opacity-0' : 'opacity-100'}`}
         onClick={onSelect}>
         <motion.div
           layoutId={`image-container-${id}`}

@@ -1,39 +1,14 @@
-'use client'
+import { MAX_WIDTH_MOBILE } from '@/lib/utils'
+import { WeekDaySelector } from './WeekDaySelector'
+import { WeekSelector } from './WeekSelector'
+import useMedia from 'use-media'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { getMonthName } from '@/lib/utils'
-import { useCalendar } from '@/contexts/CalendarContext'
-
-export function CalendarHeader({ weekDates }: { weekDates: string[] }) {
-  const { currentDate, handleWeekChange } = useCalendar()
-
+export function CalendarHeader() {
+  const isMobile = useMedia({ maxWidth: MAX_WIDTH_MOBILE })
   return (
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-2xl font-bold">
-        {getMonthName(currentDate.getMonth())} {currentDate.getFullYear()}
-      </h2>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleWeekChange('previous')}>
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-        <span
-          suppressHydrationWarning
-          className="text-sm font-medium">
-          {new Date(weekDates[0]).toLocaleDateString()} -
-          {new Date(weekDates[6]).toLocaleDateString()}
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleWeekChange('next')}>
-          <ChevronRight className="w-4 h-4" />
-        </Button>
-      </div>
+    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 md:p-6 p-3">
+      <h1 className="text-3xl font-bold text-white pb-3">Your Schedule</h1>
+      {isMobile ? <WeekDaySelector /> : <WeekSelector />}
     </div>
   )
 }
